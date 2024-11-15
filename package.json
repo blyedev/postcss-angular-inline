@@ -1,0 +1,37 @@
+{
+  "name": "postcss-angular-inline",
+  "version": "1.0.0",
+  "description": "PostCSS syntax for parsing inline CSS of Angular components",
+  "main": "src/index.js",
+  "author": "blyedev",
+  "license": "ISC",
+  "type": "module",
+  "scripts": {
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "type-check": "tsc && echo \"TypeScript compilation successful\"",
+    "type-check:watch": "watchlist src test --eager -- npm run type-check",
+    "test": "uvu test -i fixtures",
+    "test:watch": "watchlist src test  --eager -- npm test"
+  },
+  "peerDependencies": {
+    "postcss": "^8.4.49"
+  },
+  "devDependencies": {
+    "@angular/core": "^18.2.12",
+    "@eslint/js": "^9.15.0",
+    "@types/node": "^22.9.0",
+    "eslint": "^9.15.0",
+    "eslint-plugin-jsdoc": "^50.5.0",
+    "globals": "^15.12.0",
+    "postcss": "^8.4.49",
+    "stylelint": "^16.10.0",
+    "stylelint-config-standard": "^36.0.1",
+    "typescript": "^5.6.3",
+    "uvu": "^0.5.6",
+    "watchlist": "^0.3.1"
+  },
+  "dependencies": {
+    "ts-morph": "^24.0.0"
+  }
+}
