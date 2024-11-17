@@ -84,22 +84,6 @@ export class StyleParser {
     }
     this._adjustAllNodes(root);
 
-    patchRoot(root, postcss);
     return root;
-  }
-}
-
-function patchRoot(root, syntax) {
-  const originalToString = root.toString;
-  try {
-    Object.defineProperty(root, "toString", {
-      configurable: true,
-      enumerable: false,
-      value(stringifier) {
-        return originalToString.call(this, stringifier || syntax);
-      },
-    });
-  } catch {
-    // ignore
   }
 }
