@@ -1,12 +1,15 @@
 import { Document, Input } from "postcss";
-import { parseTypescript } from "./parse-typescript.js";
+import { TypescriptParser } from "./parser-typescript.js";
 import { StyleParser } from "./parser-styles.js";
 
+/**
+ * Represents a parser that processes Angular component styles within TypeScript files.
+ */
 export class AngularParser {
   /**
-   * Initializes the parser
+   * Constructs a new instance of the AngularParser.
    *
-   * @param {Input} input The PostCSS wrapper around a file
+   * @param {Input} input - The PostCSS `Input` object wrapping the source file.
    */
   constructor(input) {
     this.input = input;
@@ -16,12 +19,14 @@ export class AngularParser {
   }
 
   /**
-   * Sleeper parser activation phrase ;)
+   * Parses the input TypeScript file to extract and process Angular component styles.
    *
-   * @param {Pick<import("postcss").ProcessOptions, "from" | "map">} opts PostCSS process options
+   * @param {Pick<import("postcss").ProcessOptions, "from" | "map">} opts - The PostCSS processing options.
+   * @returns {Document} The root node of the generated Abstract Syntax Tree (AST).
    */
   parse(opts) {
-    const styleLiterals = parseTypescript(this.input.css, opts && opts.from);
+    const typescriptParser = new TypescriptParser(this.input);
+    const styleLiterals = typescriptParser.parse();
 
     let index = 0;
     styleLiterals.forEach((styleLiteral, idx) => {
@@ -43,5 +48,7 @@ export class AngularParser {
       index = end + 1;
       this.doc.push(stylesRoot);
     });
+
+    return this.doc;
   }
 }

@@ -1,63 +1,65 @@
 import postcss from "postcss";
+
 /**
- * Class to adjust node locations within the source code.
+ * Represents a parser that adjusts the positions of nodes within the source code.
  */
 export class StyleParser {
   /**
-   * Constructor
+   * Constructs a new instance of the StyleParser class.
    *
-   * @param {postcss.Input} input - An instance of the Locations class.
-   * @param {import("ts-morph").StringLiteral | import("ts-morph").NoSubstitutionTemplateLiteral} styleLiteral - The style literal node.
+   * @param {postcss.Input} input - The input source containing the style information.
+   * @param {import("ts-morph").StringLiteral | import("ts-morph").NoSubstitutionTemplateLiteral} styleLiteral - The style literal node to be processed.
    */
   constructor(input, styleLiteral) {
     this.input = input;
-
-    const { col, line } = input.fromOffset(styleLiteral.getStart());
-    this.column = col - 1;
-    this.line = line - 1;
     this.styleLiteral = styleLiteral;
   }
 
-  _adjustPosition(object) {
-    if (object) {
-      if (object.line === 1) {
-        object.column += this.column;
-      }
-      object.line += this.line;
-      if (typeof object.offset === "number") {
-        object.offset += this.styleLiteral.getStart();
-      }
-      if (typeof object.endLine === "number") {
-        if (object.endLine === 1) {
-          object.endColumn += this.column;
-        }
-        object.endLine += this.line;
-      }
-    }
-  }
+  /**
+   * Modifies a position object to be relative to the input file instead of the parsed CSS.
+   *
+   * @param {postcss.Position} position - The position object that requires adjustment.
+   */
+  _adjustPosition(position) {
+    const { col, line } = this.input.fromOffset(this.styleLiteral.getStart());
 
-  _adjustNode(node) {
-    this._adjustPosition(node.source.start);
-    this._adjustPosition(node.source.end);
+    if (position.line === 1) {
+      position.column += col;
+    }
+    position.line += line - 1;
+    position.offset += this.styleLiteral.getStart() + 1;
   }
 
   /**
-   * Adjusts the position of source to be relative to the entire file not input css
+   * Adjusts the positional data of a specific AST node to align with the input file's context.
    *
-   * @param {postcss.Root} root The root of all styles to be adjusted
+   * @param {postcss.AnyNode} node - The AST node whose position needs to be adjusted.
+   */
+  _adjustNode(node) {
+    this._adjustPosition(node.source.start);
+    this._adjustPosition(node.source.end);
+    node.source.end.column -= 1;
+    node.source.end.offset -= 1;
+  }
+
+  /**
+   * Updates the positions of all nodes within the provided root AST to correspond with the input file.
+   *
+   * @param {postcss.Root} root - The root node of the stylesheet AST that requires adjustment.
    */
   _adjustAllNodes(root) {
     this._adjustNode(root);
-    root.source = {
-      ...root.source,
-      input: this.input,
-    };
-
     root.walk((node) => {
       this._adjustNode(node);
     });
   }
 
+  /**
+   * Modifies error positions to reflect the context of the input file accurately.
+   *
+   * @param {any} error - The error object that needs positional adjustment.
+   * @returns {any} The error object with updated position information.
+   */
   _adjustError(error) {
     if (error && error.name === "CssSyntaxError") {
       this._adjustPosition(error);
@@ -70,19 +72,28 @@ export class StyleParser {
     return error;
   }
 
+  /**
+   * Parses the style literal and generates the corresponding Abstract Syntax Tree (AST).
+   *
+   * @param {Pick<import("postcss").ProcessOptions, "from" | "map">} opts - The PostCSS processing options.
+   * @returns {postcss.Root} The root node of the generated AST.
+   * @throws Will throw an error if parsing fails, with adjusted error positions.
+   */
   parse(opts) {
     const styleLiteral = this.styleLiteral;
     let root;
     try {
-      root = postcss.parse(
-        styleLiteral.getLiteralText(),
-        Object.assign({}, opts, { map: false }),
-      );
+      root = postcss.parse(styleLiteral.getLiteralText(), opts);
     } catch (error) {
       this._adjustError(error);
       throw error;
     }
+
     this._adjustAllNodes(root);
+    root.source = {
+      ...root.source,
+      input: this.input,
+    };
 
     return root;
   }

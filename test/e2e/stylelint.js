@@ -64,4 +64,5 @@ test(`Test if stylelint considers this empty source: ${emptySourceFixture.filena
     url: undefined,
   });
 });
+
 test.run();

@@ -1,9 +1,11 @@
 import { Document } from "postcss";
 
 /**
- * Stringifies a PostCSS node, handling Document nodes specifically.
- * @param {import('postcss').AnyNode} node - The PostCSS node to stringify.
- * @param {import('postcss').Builder} builder - The builder function used for stringification.
+ * Serializes a PostCSS node into its string representation.
+ *
+ * @param {import('postcss').AnyNode} node - The PostCSS node to be stringified.
+ * @param {import('postcss').Builder} builder - The builder function responsible for handling the serialized output.
+ * @returns {void} This function does not return a value; it utilizes the builder function for output.
  */
 export default function stringify(node, builder) {
   if (!(node instanceof Document)) {
@@ -15,7 +17,7 @@ export default function stringify(node, builder) {
     node.nodes.forEach((root) => {
       builder(root.raws.codeBefore, root);
       builder(root.toString(), root);
-      builder(root.raws.codeAfter || "", root);
+      builder(root.raws.codeAfter, root);
     });
   } else {
     builder(node.source.input.css, node);
