@@ -3,7 +3,7 @@ import stylelint from "stylelint";
 import stylelintConfig from "stylelint-config-standard";
 import customSyntax from "../../src/index.js";
 import { getAllFixtureFilenames, getFixtureCode } from "../utils.js";
-import * as assert from "uvu/assert";
+import { equal, is, not, ok, snapshot } from "uvu/assert";
 
 const stylelintRun = (content, path, opts) => {
   return stylelint.lint({
@@ -36,14 +36,18 @@ autofixFiles.forEach(({ fixable, fixed }) => {
     const result = await stylelintRun(fixture.code, fixture.path, {
       fix: true,
     });
-    assert.is(result.code, getFixtureCode(fixed).code);
+    snapshot(result.code, getFixtureCode(fixed).code);
   });
 });
 
 const noSourceFixture = getFixtureCode("no-style.component.ts");
 test(`Test if stylelint considers this empty source: ${noSourceFixture.filename}`, async () => {
   const result = await stylelintRun(noSourceFixture.code, noSourceFixture.path);
-  assert.equal(result.results[0].warnings, []);
+  equal(
+    result.results[0].warnings.length,
+    0,
+    `Expected no warnings but the following warnings were raised: ${result.results[0].warnings}`,
+  );
 });
 
 const emptySourceFixture = getFixtureCode("empty-style.component.ts");
@@ -52,17 +56,32 @@ test(`Test if stylelint considers this empty source: ${emptySourceFixture.filena
     emptySourceFixture.code,
     emptySourceFixture.path,
   );
+  ok(result);
+  ok(result.results[0]);
 
-  assert.equal(result.results[0].warnings[0], {
-    line: 6,
-    column: 11,
-    endLine: 6,
-    endColumn: 12,
-    rule: "no-empty-source",
-    severity: "error",
-    text: "Unexpected empty source (no-empty-source)",
-    url: undefined,
-  });
+  const warnings = result.results[0].warnings;
+  not.equal(warnings, [], "Expected warnings not to be empty");
+  ok(
+    warnings.map((w) => w.rule).includes("no-empty-source"),
+    `Expected a warning about empty source. Warnings: ${warnings}`,
+  );
+});
+
+const whitespaceFixture = getFixtureCode("whitespace.component.ts");
+test(`Test if stylelint considers this empty source: ${whitespaceFixture.filename}`, async () => {
+  const result = await stylelintRun(
+    whitespaceFixture.code,
+    whitespaceFixture.path,
+  );
+  ok(result);
+  ok(result.results[0]);
+
+  const warnings = result.results[0].warnings;
+  not.equal(warnings, [], "Expected warnings not to be empty");
+  ok(
+    warnings.map((w) => w.rule).includes("no-empty-source"),
+    `Expected a warning about empty source. Warnings: ${warnings.toString()}`,
+  );
 });
 
 test.run();

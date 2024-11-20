@@ -1,4 +1,4 @@
-import postcss from "postcss";
+import postcss, { CssSyntaxError } from "postcss";
 
 /**
  * Represents a parser that adjusts the positions of nodes within the source code.
@@ -18,16 +18,25 @@ export class StyleParser {
   /**
    * Modifies a position object to be relative to the input file instead of the parsed CSS.
    *
-   * @param {postcss.Position} position - The position object that requires adjustment.
+   * @param {postcss.Position | postcss.FilePosition | postcss.CssSyntaxError} object - The position object that requires adjustment.
    */
-  _adjustPosition(position) {
+  _adjustPosition(object) {
     const { col, line } = this.input.fromOffset(this.styleLiteral.getStart());
-
-    if (position.line === 1) {
-      position.column += col;
+    if (object) {
+      if (object.line === 1) {
+        object.column += col;
+      }
+      object.line += line - 1;
+      if (typeof object.offset === "number") {
+        object.offset += this.styleLiteral.getStart() + 1;
+      }
+      if (typeof object.endLine === "number") {
+        if (object.endLine === 1) {
+          object.endColumn += col;
+        }
+        object.endLine += line;
+      }
     }
-    position.line += line - 1;
-    position.offset += this.styleLiteral.getStart() + 1;
   }
 
   /**
@@ -38,6 +47,8 @@ export class StyleParser {
   _adjustNode(node) {
     this._adjustPosition(node.source.start);
     this._adjustPosition(node.source.end);
+
+    // End position on source is inclusive but the function is generic for both position and ranges
     node.source.end.column -= 1;
     node.source.end.offset -= 1;
   }
@@ -57,8 +68,8 @@ export class StyleParser {
   /**
    * Modifies error positions to reflect the context of the input file accurately.
    *
-   * @param {any} error - The error object that needs positional adjustment.
-   * @returns {any} The error object with updated position information.
+   * @param {CssSyntaxError} error - The error object that needs positional adjustment.
+   * @returns {CssSyntaxError} The error object with updated position information.
    */
   _adjustError(error) {
     if (error && error.name === "CssSyntaxError") {
@@ -68,6 +79,8 @@ export class StyleParser {
         /:\d+:\d+:/,
         `:${error.line}:${error.column}:`,
       );
+      error.source = this.input.css;
+      error.input.source = this.input.css;
     }
     return error;
   }

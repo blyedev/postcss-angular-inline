@@ -1,11 +1,11 @@
 import { test } from "uvu";
 import { getFixtureCode } from "../utils.js";
 import { TypescriptParser } from "../../src/parser-typescript.js";
-import { Input } from "postcss";
+import { CssSyntaxError, Input } from "postcss";
 import { StyleParser } from "../../src/parser-styles.js";
-import { equal } from "uvu/assert";
+import { equal, throws } from "uvu/assert";
 
-const testCases = [
+const positionTestCases = [
   {
     filename: "empty-style.component.ts",
     sources: [
@@ -71,7 +71,7 @@ const testCases = [
   },
 ];
 
-testCases.forEach(({ filename, sources }) => {
+positionTestCases.forEach(({ filename, sources }) => {
   const fixture = getFixtureCode(filename);
 
   test(`Ensure strings have correct position: ${fixture.filename}`, () => {
@@ -87,6 +87,49 @@ testCases.forEach(({ filename, sources }) => {
       equal(styleNode.source, { input, ...sources[idx] });
     });
   });
+});
+
+const syntaxErrFixture = getFixtureCode("syntax-error.component.ts");
+
+test(`Ensure syntax error has correct position: ${syntaxErrFixture.filename}`, () => {
+  const opts = { from: syntaxErrFixture.path };
+  const input = new Input(syntaxErrFixture.code, opts);
+
+  const tsParser = new TypescriptParser(input);
+  const styleLiterals = tsParser.parse();
+
+  const styleParser = new StyleParser(input, styleLiterals[0]);
+
+  throws(
+    () => styleParser.parse(opts),
+    (/** @type {Error} */ err) => {
+      if (!(err instanceof CssSyntaxError)) return false;
+
+      const expectedPos = {
+        file: syntaxErrFixture.path,
+        line: 6,
+        column: 22,
+        endLine: 7,
+        endColumn: 27,
+        source: syntaxErrFixture.code,
+      };
+
+      const expectedInput = {
+        url: "file:///home/blyedev/Projects/postcss-angular-inline/test/fixtures/syntax-error.component.ts",
+        ...expectedPos,
+      };
+      const expectedErrorProperties = {
+        name: "CssSyntaxError",
+        reason: "Unknown word",
+        ...expectedPos,
+        input: expectedInput,
+      };
+
+      equal({ ...err }, { ...expectedErrorProperties });
+
+      return true;
+    },
+  );
 });
 
 test.run();
