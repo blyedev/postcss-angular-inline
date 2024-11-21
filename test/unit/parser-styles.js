@@ -1,9 +1,9 @@
 import { test } from "uvu";
 import { getFixtureCode } from "../utils.js";
-import { TypescriptParser } from "../../src/parser-typescript.js";
 import { CssSyntaxError, Input } from "postcss";
-import { StyleParser } from "../../src/parser-styles.js";
 import { equal, throws } from "uvu/assert";
+import { parseTypescript } from "../../src/parser/parse-typescript.js";
+import { StyleParser } from "../../src/parser/parser-styles.js";
 
 const positionTestCases = [
   {
@@ -78,8 +78,7 @@ positionTestCases.forEach(({ filename, sources }) => {
     const opts = { from: fixture.path };
     const input = new Input(fixture.code, opts);
 
-    const tsParser = new TypescriptParser(input);
-    const styleLiterals = tsParser.parse();
+    const styleLiterals = parseTypescript(input);
 
     styleLiterals.forEach((styleLiteral, idx) => {
       const styleParser = new StyleParser(input, styleLiteral);
@@ -95,8 +94,7 @@ test(`Ensure syntax error has correct position: ${syntaxErrFixture.filename}`, (
   const opts = { from: syntaxErrFixture.path };
   const input = new Input(syntaxErrFixture.code, opts);
 
-  const tsParser = new TypescriptParser(input);
-  const styleLiterals = tsParser.parse();
+  const styleLiterals = parseTypescript(input);
 
   const styleParser = new StyleParser(input, styleLiterals[0]);
 

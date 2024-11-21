@@ -1,8 +1,8 @@
 import { test } from "uvu";
 import * as assert from "uvu/assert";
 import { getFixtureCode } from "../utils.js";
-import { TypescriptParser } from "../../src/parser-typescript.js";
 import { Input } from "postcss";
+import { parseTypescript } from "../../src/parser/parse-typescript.js";
 
 const testCases = [
   {
@@ -36,8 +36,7 @@ testCases.forEach(({ filename, styles }) => {
   test(`Parse the strings of fixture: ${fixture.filename}`, () => {
     const input = new Input(fixture.code, { from: fixture.path });
 
-    const parser = new TypescriptParser(input);
-    const result = parser.parse();
+    const result = parseTypescript(input);
 
     assert.ok(result);
     assert.instance(result, Array);

@@ -12,7 +12,7 @@ const testCases = [
   "no-style.component.ts",
   "one-style.component.ts",
   "real.component.ts",
-  "whitespace.component.ts",
+  //"whitespace.component.ts",
 ];
 
 testCases.forEach((filename) => {

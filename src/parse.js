@@ -1,5 +1,5 @@
 import { Document, Input } from "postcss";
-import { AngularParser } from "./parser-angular.js";
+import { parseAngular } from "./parser/parser-angular.js";
 
 /**
  * Represents an object that can be converted to a string.
@@ -19,8 +19,5 @@ import { AngularParser } from "./parser-angular.js";
 export default function parse(angularCode, opts) {
   const input = new Input(angularCode.toString(), opts);
 
-  const angularParser = new AngularParser(input);
-  angularParser.parse(opts);
-
-  return angularParser.doc;
+  return parseAngular(input, opts);
 }

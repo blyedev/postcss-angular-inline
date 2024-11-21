@@ -4,36 +4,46 @@ import { Project, SyntaxKind } from "ts-morph";
  * @typedef {import("ts-morph").StringLiteral | import("ts-morph").NoSubstitutionTemplateLiteral} StyleLiteral
  */
 
-export class TypescriptParser {
-  /**
-   * Creates an instance of TypescriptParser.
-   *
-   * @param {import("postcss").Input} input - The PostCSS input containing the source CSS and its originating file.
-   */
-  constructor(input) {
-    const project = new Project({
-      useInMemoryFileSystem: true,
-    });
+/**
+ * Parses TypeScript source to extract style literals from component decorators.
+ *
+ * @param {import("postcss").Input} input - The PostCSS input containing the source CSS and its originating file.
+ * @returns {StyleLiteral[]} An array of style literals extracted from the components within the source file.
+ */
+export function parseTypescript(input) {
+  const project = new Project({
+    useInMemoryFileSystem: true,
+  });
 
-    this.sourceFile = project.createSourceFile(input.from, input.css);
-  }
+  const sourceFile = project.createSourceFile(input.from, input.css);
+  return extractStyleLiterals(sourceFile);
+}
 
-  /**
-   * Parses the TypeScript source file to extract style literals from component decorators.
-   *
-   * @returns {StyleLiteral[]} An array of style literals extracted from the components within the source file.
-   */
-  parse() {
-    return this.sourceFile
-      .getClasses()
-      .flatMap((cls) => cls.getDecorators())
-      .filter(isComponentDecorator)
-      .flatMap((decorator) => decorator.getArguments())
-      .filter(isObjectLiteral)
-      .flatMap(getStylesProperty)
-      .flatMap(getStyleValues)
-      .map(castToStyleLiteral);
-  }
+/**
+ * Extracts style literals from a source file.
+ *
+ * @param {import("ts-morph").SourceFile} sourceFile - The TypeScript source file to parse.
+ * @returns {StyleLiteral[]} An array of extracted style literals.
+ */
+function extractStyleLiterals(sourceFile) {
+  return sourceFile
+    .getClasses()
+    .flatMap(getComponentDecorators)
+    .flatMap(getDecoratorArguments)
+    .filter(isObjectLiteral)
+    .flatMap(getStylesProperty)
+    .flatMap(getStyleValues)
+    .map(castToStyleLiteral);
+}
+
+/**
+ * Retrieves component decorators from a class.
+ *
+ * @param {import("ts-morph").ClassDeclaration} cls - The class declaration.
+ * @returns {import("ts-morph").Decorator[]} An array of Component decorators.
+ */
+function getComponentDecorators(cls) {
+  return cls.getDecorators().filter(isComponentDecorator);
 }
 
 /**
@@ -44,6 +54,16 @@ export class TypescriptParser {
  */
 function isComponentDecorator(decorator) {
   return decorator.getName() === "Component";
+}
+
+/**
+ * Retrieves arguments from a decorator.
+ *
+ * @param {import("ts-morph").Decorator} decorator - The decorator.
+ * @returns {import("ts-morph").Node[]} An array of decorator arguments.
+ */
+function getDecoratorArguments(decorator) {
+  return decorator.getArguments();
 }
 
 /**

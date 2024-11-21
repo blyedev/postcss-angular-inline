@@ -1,5 +1,4 @@
-import { Document } from "postcss";
-
+import { Document } from "./nodes/document.js";
 /**
  * Serializes a PostCSS node into its string representation.
  *
@@ -16,8 +15,12 @@ export default function stringify(node, builder) {
   if (node.nodes && node.nodes.length) {
     node.nodes.forEach((root) => {
       builder(root.raws.codeBefore, root);
+      builder(root.raws.stringType, root);
       builder(root.toString(), root);
-      builder(root.raws.codeAfter, root);
+      builder(root.raws.stringType, root);
+      if (root.raws.codeAfter) {
+        builder(root.raws.codeAfter, root);
+      }
     });
   } else {
     builder(node.source.input.css, node);

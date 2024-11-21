@@ -1,5 +1,5 @@
 import { test } from "uvu";
-import * as assert from "uvu/assert";
+import { ok, instance, type } from "uvu/assert";
 import { parse } from "../../src/index.js";
 import postcss from "postcss";
 import { getFixtureCode } from "../utils.js";
@@ -23,10 +23,11 @@ testCases.forEach((filename) => {
       from: fixture.path,
     });
 
-    assert.ok(result);
-    assert.instance(result, postcss.Document);
+    ok(result);
+    type(result.toString, "function");
+    instance(result, postcss.Document);
     result.nodes.forEach((node) => {
-      assert.instance(node, postcss.Root);
+      instance(node, postcss.Root);
     });
   });
 });
