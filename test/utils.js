@@ -15,6 +15,7 @@ const dirPath = join(__dirname, "fixtures");
 
 /**
  * Retrieves a test case
+ *
  * @param {string} filename Path of fixture
  * @returns {Fixture} Retrieved fixture
  */
@@ -26,6 +27,7 @@ export function getFixtureCode(filename) {
 
 /**
  * Get all availible fixture paths
+ *
  * @returns {string[]} All available fixture filenames
  */
 export function getAllFixtureFilenames() {

@@ -1,8 +1,25 @@
 {
   "name": "postcss-angular-inline",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "PostCSS syntax for parsing inline CSS of Angular components",
+  "keywords": [
+    "postcss",
+    "angular",
+    "inline-styles",
+    "css",
+    "syntax",
+    "stylelint"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/blyedev/postcss-angular-inline.git"
+  },
   "main": "src/index.js",
+  "files": [
+    "src/",
+    "README.md",
+    "LICENSE"
+  ],
   "author": "blyedev",
   "license": "ISC",
   "type": "module",
