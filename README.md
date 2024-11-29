@@ -1,10 +1,38 @@
 # PostCSS Angular Inline
 
-## Overview
-
 A [PostCSS](https://github.com/postcss/postcss) syntax plugin to process inline CSS styles in Angular components, enabling the use of PostCSS transformations and Stylelint.
 
-**Current Version:** `0.1.0`
+> **Note:** Generally, you don't need a syntax plugin for Angular unless you're using inline styles. It's common practice to generate styles outside of the component, but if you choose to use inline styles, this plugin enables PostCSS transformations and Stylelint integration.
+
+## Usage with Stylelint
+
+To use Stylelint with this syntax plugin and confine linting to only .component.ts files, follow these steps:
+
+1. Install Stylelint and Necessary Plugins
+
+   ```bash
+   npm install --save-dev stylelint stylelint-config-standard postcss-angular-inline
+   ```
+
+2. Create a .stylelintrc.json Configuration File
+
+   ```json
+   {
+     "extends": ["stylelint-config-standard"],
+     "overrides": [
+       {
+         "files": ["**/*.component.ts"],
+         "customSyntax": "postcss-angular-inline"
+       }
+     ]
+   }
+   ```
+
+3. Run Stylelint on .component.ts Files
+
+   ```bash
+   npx stylelint "**/*.component.ts"
+   ```
 
 ## Usage with PostCSS
 
@@ -24,40 +52,6 @@ A [PostCSS](https://github.com/postcss/postcss) syntax plugin to process inline 
        // Your PostCSS plugins
      ],
    };
-   ```
-
-## Usage with Stylelint
-
-To use Stylelint with this syntax plugin and confine linting to only .component.ts files, follow these steps:
-
-1. Install Stylelint and Necessary Plugins
-
-   ```bash
-   npm install --save-dev stylelint stylelint-config-standard postcss-angular-inline
-   ```
-
-2. Create a .stylelintrc.json Configuration File
-
-   ```json
-   // .stylelintrc.json
-   {
-     "extends": ["stylelint-config-standard"],
-     "overrides": [
-       {
-         "files": ["**/*.component.ts"],
-         "customSyntax": "postcss-angular-inline",
-         "rules": {
-           // Your Stylelint rules
-         },
-       },
-     ],
-   };
-   ```
-
-3. Run Stylelint on .component.ts Files
-
-   ```bash
-   npx stylelint "**/*.component.ts"
    ```
 
 ## Roadmap to Version 1.0.0
