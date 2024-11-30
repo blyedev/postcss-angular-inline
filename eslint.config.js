@@ -1,14 +1,19 @@
 import globals from "globals";
-import pluginJs from "@eslint/js";
+import js from "@eslint/js";
 import jsdoc from "eslint-plugin-jsdoc";
+import importPlugin from "eslint-plugin-import";
 
 /** @type {import('eslint').Linter.Config[]} */
 export default [
   { languageOptions: { globals: globals.node } },
-  pluginJs.configs.recommended,
+  js.configs.recommended,
   jsdoc.configs["flat/recommended"],
+  importPlugin.flatConfigs.recommended,
   {
     files: ["**/*.js"],
+    languageOptions: {
+      ecmaVersion: 2020,
+    },
     plugins: {
       jsdoc,
     },
