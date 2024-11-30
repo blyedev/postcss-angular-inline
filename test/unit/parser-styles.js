@@ -113,7 +113,7 @@ test(`Ensure syntax error has correct position: ${syntaxErrFixture.filename}`, (
       };
 
       const expectedInput = {
-        url: "file:///home/blyedev/Projects/postcss-angular-inline/test/fixtures/syntax-error.component.ts",
+        url: `file://${syntaxErrFixture.path}`,
         ...expectedPos,
       };
       const expectedErrorProperties = {
